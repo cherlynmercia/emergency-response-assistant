@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emergency AI — CodeFlux</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red:       #C41E1E;
+  --red-dk:    #8B1313;
+  --red-lt:    #FEF0F0;
+  --amber:     #C97000;
+  --amber-lt:  #FFF6E6;
+  --green:     #15733F;
+  --green-lt:  #EBF7F1;
+  --blue:      #1A5FBF;
+  --blue-lt:   #EBF2FF;
+  --purple:    #6D28D9;
+  --purple-lt: #F3EEFF;
+  --bg:        #F6F5F1;
+  --card:      #FFFFFF;
+  --text:      #18181A;
+  --muted:     #68676B;
+  --border:    #E3E1D9;
+  --r:         14px;
+  --r-sm:      10px;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ─── HEADER ─── */
+header {
+  background: var(--red);
+  padding: 0 1.25rem;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 2px 16px rgba(196,30,30,0.4);
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-cross {
+  width: 34px; height: 34px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-cross svg { width: 18px; height: 18px; }
+.logo-name { font-family: 'Rajdhani', sans-serif; color: #fff; font-size: 1.15rem; font-weight: 700; line-height: 1.1; }
+.logo-name small { display: block; font-size: 0.63rem; font-weight: 500; opacity: 0.8; letter-spacing: 1.2px; text-transform: uppercase; }
+.lang-btns { display: flex; gap: 5px; }
+.lang-btn {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.45);
+  border-radius: 20px;
+  padding: 4px 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+.lang-btn.active { background: #fff; color: var(--red); border-color: #fff; }
+
+/* ─── LAYOUT ─── */
+main {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 1.1rem 1rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* ─── SOS BANNER ─── */
+.sos {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--red);
+  border-radius: var(--r);
+  padding: 1rem 1.25rem;
+  text-decoration: none;
+  color: #fff;
+  animation: pulse 2.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(196,30,30,0.45); }
+  55%      { box-shadow: 0 0 0 10px rgba(196,30,30,0); }
+}
+.sos-left .tiny { font-size: 0.64rem; font-weight: 600; letter-spacing: 1.3px; text-transform: uppercase; opacity: 0.85; }
+.sos-left .num  { font-family: 'Rajdhani', sans-serif; font-size: 2.5rem; font-weight: 700; line-height: 1; }
+.sos-left .sub  { font-size: 0.77rem; opacity: 0.85; margin-top: 1px; }
+.sos-icon {
+  width: 50px; height: 50px;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.sos-icon svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ─── INPUT CARD ─── */
+.card {
+  background: var(--card);
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  padding: 1.1rem 1.15rem;
+}
+.card-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 0.9rem;
+}
+.card-title svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--red); fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0.8rem 1rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text);
+  resize: none;
+  height: 80px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+textarea:focus { border-color: var(--red); }
+textarea::placeholder { color: #bbb; }
+
+.input-row { display: flex; gap: 8px; margin-top: 0.7rem; }
+
+.mic-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--red-lt);
+  color: var(--red);
+  border: 1.5px solid #F0BFBF;
+  border-radius: 30px;
+  padding: 8px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.mic-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+.analyze-btn {
+  flex: 1;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  padding: 8px 16px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.analyze-btn:hover { background: var(--red-dk); }
+
+/* ─── SEVERITY ROW ─── */
+.slabel {
+  font-size: 0.67rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  margin-bottom: -0.15rem;
+}
+.sev-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 7px; }
+.sev-card { border-radius: var(--r-sm); padding: 0.7rem 0.6rem; text-align: center; border: 1.5px solid transparent; }
+.sev-card.critical { background: #FFF1F1; border-color: #F5BEBE; }
+.sev-card.moderate { background: var(--amber-lt); border-color: #F5CF8A; }
+.sev-card.mild     { background: var(--green-lt); border-color: #9FD9B8; }
+.sev-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-bottom: 4px; }
+.critical .sev-dot { background: var(--red); }
+.moderate .sev-dot { background: var(--amber); }
+.mild .sev-dot     { background: var(--green); }
+.sev-title { display: block; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 0.9rem; }
+.critical .sev-title { color: var(--red-dk); }
+.moderate .sev-title { color: #7A4500; }
+.mild .sev-title     { color: #0D5C30; }
+.sev-eg { display: block; font-size: 0.68rem; color: var(--muted); margin-top: 2px; line-height: 1.3; }
+
+/* ═══════════════════════════════════════════
+   ─── EMERGENCY CARDS (THE MAIN SECTION) ───
+   ═══════════════════════════════════════════ */
+
+/* Hide all radio inputs */
+input[type="radio"] { display: none; }
+
+.section-heading {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: -0.1rem;
+}
+.section-heading svg { width: 16px; height: 16px; color: var(--red); fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── 5 CARD GRID ── */
+.em-cards {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0,1fr));
+  gap: 7px;
+}
+
+.em-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 0.8rem 0.4rem 0.7rem;
+  background: var(--card);
+  border-radius: var(--r-sm);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+}
+
+.em-label:hover { border-color: #ccc; }
+
+.em-emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.em-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.3px;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+/* Arrow indicator at bottom of active card */
+.em-label::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid transparent;
+  display: none;
+}
+
+/* ── ACTIVE STATE via radio ── */
+#c1:checked ~ main .lbl1,
+#c2:checked ~ main .lbl2,
+#c3:checked ~ main .lbl3,
+#c4:checked ~ main .lbl4,
+#c5:checked ~ main .lbl5 {
+  border-color: var(--red);
+  background: var(--red-lt);
+}
+
+#c1:checked ~ main .lbl1 .em-name,
+#c2:checked ~ main .lbl2 .em-name,
+#c3:checked ~ main .lbl3 .em-name,
+#c4:checked ~ main .lbl4 .em-name,
+#c5:checked ~ main .lbl5 .em-name { color: var(--red-dk); }
+
+#c1:checked ~ main .lbl1::after,
+#c2:checked ~ main .lbl2::after,
+#c3:checked ~ main .lbl3::after,
+#c4:checked ~ main .lbl4::after,
+#c5:checked ~ main .lbl5::after {
+  border-top-color: var(--red);
+  display: block;
+}
+
+/* ── STEPS PANEL (shown below cards) ── */
+.steps-panel {
+  display: none;
+  background: var(--card);
+  border-radius: var(--r);
+  border: 2px solid var(--red);
+  padding: 1.1rem 1.15rem;
+  margin-top: 0;
+}
+
+/* Show correct panel */
+#c1:checked ~ main #panel1,
+#c2:checked ~ main #panel2,
+#c3:checked ~ main #panel3,
+#c4:checked ~ main #panel4,
+#c5:checked ~ main #panel5 { display: block; }
+
+/* Panel header */
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.panel-title-wrap .ptitle {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.panel-title-wrap .psub {
+  font-size: 0.73rem;
+  color: var(--muted);
+  margin-top: 1px;
+  font-style: italic;
+}
+
+.panel-badge {
+  margin-left: auto;
+  font-size: 0.69rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.badge-crit { background: var(--red-lt); color: var(--red); border: 1px solid #F5BEBE; }
+.badge-mod  { background: var(--amber-lt); color: var(--amber); border: 1px solid #F5CF8A; }
+
+/* Steps list */
+.steps { display: flex; flex-direction: column; gap: 0; }
+
+.step {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.step:first-child { padding-top: 0; }
+.step:last-child  { border-bottom: none; padding-bottom: 0; }
+
+.step-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.step-body .en { font-weight: 500; font-size: 0.93rem; color: var(--text); line-height: 1.35; }
+.step-body .ta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; font-style: italic; line-height: 1.4; }
+
+/* Warning box */
+.warn {
+  margin-top: 0.9rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--r-sm);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+.warn b { display: block; font-weight: 600; margin-bottom: 2px; }
+.warn.amber { background: var(--amber-lt); border: 1px solid #F5CF8A; color: #7A4500; }
+.warn.red   { background: var(--red-lt);   border: 1px solid #F5BEBE; color: var(--red-dk); }
+.warn.green { background: var(--green-lt); border: 1px solid #9FD9B8; color: #0D5C30; }
+
+/* ─── HOSPITALS ─── */
+.map-box {
+  background: #E8EAE4;
+  border-radius: var(--r-sm);
+  height: 130px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  border: 1px dashed #C5C7C0;
+  margin-bottom: 0.8rem;
+}
+.map-box svg { width: 26px; height: 26px; opacity: 0.4; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+
+.hosp-list { display: flex; flex-direction: column; gap: 7px; }
+
+.hosp-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0.7rem 0.9rem;
+  background: var(--bg);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+}
+.hosp-item:hover { border-color: #bbb; }
+.hosp-name { font-weight: 600; font-size: 0.88rem; }
+.hosp-dist { font-size: 0.74rem; color: var(--muted); margin-top: 1px; }
+.hosp-tag {
+  background: var(--green-lt); color: var(--green);
+  font-size: 0.71rem; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px;
+  border: 1px solid #9FD9B8;
+  white-space: nowrap; flex-shrink: 0;
+}
+
+/* ─── FOOTER ─── */
+footer {
+  text-align: center;
+  padding: 1.25rem 1rem 0.5rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.9;
+}
+footer strong { color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- Radio state controllers -->
+<input type="radio" name="card" id="c1">
+<input type="radio" name="card" id="c2">
+<input type="radio" name="card" id="c3">
+<input type="radio" name="card" id="c4">
+<input type="radio" name="card" id="c5">
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="logo">
+    <div class="logo-cross">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#C41E1E" stroke-width="3" stroke-linecap="round">
+        <line x1="12" y1="2" x2="12" y2="22"/>
+        <line x1="2" y1="12" x2="22" y2="12"/>
+      </svg>
+    </div>
+    <div class="logo-name">
+      Emergency AI
+      <small>CodeFlux · ITERYX '26</small>
+    </div>
+  </div>
+  <div class="lang-btns">
+    <a href="#" class="lang-btn active">EN</a>
+    <a href="#" class="lang-btn">தமிழ்</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── 108 CALL ── -->
+  <a href="tel:108" class="sos">
+    <div class="sos-left">
+      <div class="tiny">Ambulance Emergency</div>
+      <div class="num">108</div>
+      <div class="sub">Tap to call · Free · 24/7 · தமிழ்நாடு</div>
+    </div>
+    <div class="sos-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.48 12 19.79 19.79 0 011.43 3.4 2 2 0 013.4 1.22h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+      </svg>
+    </div>
+  </a>
+
+  <!-- ── INPUT ── -->
+  <div class="card">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Describe the Emergency
+    </div>
+    <textarea placeholder='Type what happened — e.g. "Person not breathing", "Severe bleeding", "Choking on food"…'></textarea>
+    <div class="input-row">
+      <a href="#" class="mic-btn">
+        <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0014 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        🎙 Speak
+      </a>
+      <a href="#" class="analyze-btn">Analyze →</a>
+    </div>
+  </div>
+
+  <!-- ── SEVERITY ── -->
+  <p class="slabel">Severity Detection</p>
+  <div class="sev-grid">
+    <div class="sev-card critical">
+      <span class="sev-dot"></span>
+      <span class="sev-title">Critical</span>
+      <span class="sev-eg">Not breathing, unconscious, heavy bleed</span>
+    </div>
+    <div class="sev-card moderate">
+      <span class="sev-dot"></span>
+      <span class="sev-title">Moderate</span>
+      <span class="sev-eg">Fracture, burn, choking, chest pain</span>
+    </div>
+    <div class="sev-card mild">
+      <span class="sev-dot"></span>
+      <span class="sev-title">Mild</span>
+      <span class="sev-eg">Small cut, sprain, mild fever</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       ── 5 EMERGENCY CARDS + STEPS ──
+       ═══════════════════════════════════ -->
+
+  <div class="section-heading">
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Select Emergency Type
+  </div>
+
+  <!-- THE 5 CARDS -->
+  <div class="em-cards">
+    <label class="em-label lbl1" for="c1">
+      <span class="em-emoji">❤️</span>
+      <span class="em-name">Cardiac Arrest</span>
+    </label>
+    <label class="em-label lbl2" for="c2">
+      <span class="em-emoji">🩸</span>
+      <span class="em-name">Bleeding</span>
+    </label>
+    <label class="em-label lbl3" for="c3">
+      <span class="em-emoji">😮</span>
+      <span class="em-name">Choking</span>
+    </label>
+    <label class="em-label lbl4" for="c4">
+      <span class="em-emoji">🔥</span>
+      <span class="em-name">Burns</span>
+    </label>
+    <label class="em-label lbl5" for="c5">
+      <span class="em-emoji">🦴</span>
+      <span class="em-name">Fracture</span>
+    </label>
+  </div>
+
+  <!-- ── PANEL 1: CARDIAC ── -->
+  <div class="steps-panel" id="panel1">
+    <div class="panel-head">
+      <span class="panel-icon">❤️</span>
+      <div class="panel-title-wrap">
+        <div class="ptitle">Cardiac Arrest</div>
+        <div class="psub">இதய செயலிழப்பு</div>
+      </div>
+      <span class="panel-badge badge-crit">🔴 Critical</span>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="en">Check responsiveness — tap shoulders and shout loudly</div>
+          <div class="ta">தோள்களை தட்டி சத்தமாக கூப்பிடுங்கள்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="en">Call 108 immediately if there is no response</div>
+          <div class="ta">பதில் இல்லாவிட்டால் உடனே 108 அழைக்கவும்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="en">Lay person flat on back on a hard surface</div>
+          <div class="ta">கடினமான தளத்தில் மல்லாக்க படுக்க வையுங்கள்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="en">Start CPR — push hard and fast on chest center, 100 times per minute</div>
+          <div class="ta">மார்பின் மையத்தில் நிமிடத்திற்கு 100 முறை வேகமாக அழுத்துங்கள்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="en">Give 2 rescue breaths after every 30 compressions</div>
+          <div class="ta">30 அழுத்தங்களுக்கு பிறகு 2 மூச்சு கொடுங்கள்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <div class="en">Do NOT stop CPR until the ambulance arrives</div>
+          <div class="ta">ஆம்புலன்ஸ் வரும் வரை நிறுத்தாதீர்கள்</div>
+        </div>
+      </div>
+    </div>
+    <div class="warn amber">
+      <b>⚠️ Remember</b>
+      Keep pushing even if you hear a crack — broken ribs can heal, but stopping CPR can be fatal.
+    </div>
+  </div>
+
+  <!-- ── PANEL 2: BLEEDING ── -->
+  <div class="steps-panel" id="panel2">
+    <div class="panel-head">
+      <span class="panel-icon">🩸</span>
+      <div class="panel-title-wrap">
+        <div class="ptitle">Severe Bleeding</div>
+        <div class="psub">கடுமையான இரத்தப்போக்கு</div>
+      </div>
+      <span class="panel-badge badge-mod">🟡 Moderate</span>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="en">Stay calm and wear gloves if available</div>
+          <div class="ta">அமைதியாக இருங்கள், கையுறை இருந்தால் அணியுங்கள்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="en">Apply firm, direct pressure with a clean cloth or bandage</div>
+          <div class="ta">சுத்தமான துணியால் நேரடியாக வலுவாக அழுத்துங்கள்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="en">Elevate the injured limb above heart level</div>
+          <div class="ta">காயமடைந்த உறுப்பை இதயத்தை விட மேல்நிலையில் வையுங்கள்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="en">Do NOT remove the cloth — add more on top if soaked</div>
+          <div class="ta">துணியை அகற்றாதீர்கள் — நனைந்தால் மேலே இன்னொன்று சேர்க்கவும்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="en">Call 108 if bleeding does not stop within 10 minutes</div>
+          <div class="ta">10 நிமிடத்தில் நிற்காவிட்டால் 108 அழைக்கவும்</div>
+        </div>
+      </div>
+    </div>
+    <div class="warn red">
+      <b>🚨 Do NOT</b>
+      Never remove embedded objects from wounds. Never use a tourniquet unless trained.
+    </div>
+  </div>
+
+  <!-- ── PANEL 3: CHOKING ── -->
+  <div class="steps-panel" id="panel3">
+    <div class="panel-head">
+      <span class="panel-icon">😮</span>
+      <div class="panel-title-wrap">
+        <div class="ptitle">Choking</div>
+        <div class="psub">தொண்டை அடைப்பு</div>
+      </div>
+      <span class="panel-badge badge-crit">🔴 Critical</span>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="en">Ask "Are you choking?" — if they can cough, encourage it strongly</div>
+          <div class="ta">இருமல் வந்தால் ஊக்குவிக்கவும் — வரவில்லையெனில் உதவுங்கள்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="en">Stand behind them and lean them slightly forward</div>
+          <div class="ta">பின்னால் நின்று சற்று முன்பக்கம் சாய்க்கவும்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="en">Give 5 firm back blows between shoulder blades with heel of hand</div>
+          <div class="ta">தோள்பட்டை இடையில் ஐந்து முறை உறுதியாக தட்டவும்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="en">Give 5 abdominal thrusts (Heimlich) — fist above navel, pull inward and upward</div>
+          <div class="ta">தொப்புளுக்கு மேல் முஷ்டியை வைத்து உள்ளே மேலே இழுக்கவும்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="en">Alternate 5 back blows and 5 thrusts until object is clear or 108 arrives</div>
+          <div class="ta">பொருள் வெளியேறும் வரை மாற்றி மாற்றி செய்யவும்</div>
+        </div>
+      </div>
+    </div>
+    <div class="warn amber">
+      <b>⚠️ If unconscious</b>
+      Lay them flat and begin CPR immediately. Do NOT do blind finger sweeps inside the mouth.
+    </div>
+  </div>
+
+  <!-- ── PANEL 4: BURNS ── -->
+  <div class="steps-panel" id="panel4">
+    <div class="panel-head">
+      <span class="panel-icon">🔥</span>
+      <div class="panel-title-wrap">
+        <div class="ptitle">Burns</div>
+        <div class="psub">தீக்காயம்</div>
+      </div>
+      <span class="panel-badge badge-mod">🟡 Moderate</span>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="en">Remove from heat source immediately and ensure the area is safe</div>
+          <div class="ta">உடனே தீ மூலத்திலிருந்து விலக்கவும்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="en">Cool the burn under running cool water for at least 10 minutes</div>
+          <div class="ta">குளிர்ந்த தண்ணீரில் குறைந்தது 10 நிமிடம் கழுவவும்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="en">Remove clothing and jewellery near the burn — unless stuck to skin</div>
+          <div class="ta">தோலில் ஒட்டியிருந்தால் தவிர — உடை, நகை அகற்றவும்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="en">Cover loosely with a clean, non-fluffy cloth or cling film</div>
+          <div class="ta">சுத்தமான துணியால் தளர்வாக மூடவும்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="en">Call 108 if burn is large, deep, or on face, hands, or genitals</div>
+          <div class="ta">பெரிய அல்லது ஆழமான தீக்காயம் இருந்தால் 108 அழைக்கவும்</div>
+        </div>
+      </div>
+    </div>
+    <div class="warn red">
+      <b>🚨 Never ever do this</b>
+      No ice · No butter · No toothpaste · No oil · Do NOT burst blisters
+      <br><br>இஞ்சி, வெண்ணெய், பல் விளக்கி, எண்ணெய் எதுவும் வேண்டாம். கொப்புளங்களை உடைக்காதீர்கள்.
+    </div>
+  </div>
+
+  <!-- ── PANEL 5: FRACTURE ── -->
+  <div class="steps-panel" id="panel5">
+    <div class="panel-head">
+      <span class="panel-icon">🦴</span>
+      <div class="panel-title-wrap">
+        <div class="ptitle">Fracture</div>
+        <div class="psub">எலும்பு முறிவு</div>
+      </div>
+      <span class="panel-badge badge-mod">🟡 Moderate</span>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="en">Keep the person still — do NOT move the injured limb at all</div>
+          <div class="ta">காயமடைந்த உறுப்பை நகர்த்தாதீர்கள்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="en">Immobilise the joint using a splint or rolled-up newspaper</div>
+          <div class="ta">மூட்டை நிலைப்படுத்தவும் — தாள் அல்லது கம்பு பயன்படுத்தவும்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="en">Apply an ice pack wrapped in cloth to reduce swelling and pain</div>
+          <div class="ta">துணியில் சுற்றிய ஐஸ் வைத்து வீக்கத்தை குறைக்கவும்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="en">If it is an open fracture, cover wound with clean cloth and call 108</div>
+          <div class="ta">திறந்த எலும்பு முறிவு இருந்தால் மூடி 108 அழைக்கவும்</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="en">Transport carefully to hospital — support the limb throughout</div>
+          <div class="ta">உறுப்பை தாங்கிக்கொண்டு மெதுவாக மருத்துவமனைக்கு அழைத்து செல்லவும்</div>
+        </div>
+      </div>
+    </div>
+    <div class="warn green">
+      <b>✅ Good to know</b>
+      Never try to straighten the bone yourself. Support it in exactly the position you find it.
+    </div>
+  </div>
+
+  <!-- ── NEARBY HOSPITALS ── -->
+  <div class="card">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Nearby Hospitals
+    </div>
+    <div class="map-box">
+      <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M2 8h20M8 2v20"/></svg>
+      Map loads with GPS permission
+    </div>
+    <div class="hosp-list">
+      <a href="tel:108" class="hosp-item">
+        <div>
+          <div class="hosp-name">Government General Hospital</div>
+          <div class="hosp-dist">0.8 km · Open 24/7 · Emergency Wing</div>
+        </div>
+        <div class="hosp-tag">Nearest</div>
+      </a>
+      <a href="tel:108" class="hosp-item">
+        <div>
+          <div class="hosp-name">Apollo Hospitals</div>
+          <div class="hosp-dist">1.4 km · Trauma Center</div>
+        </div>
+        <div class="hosp-tag">Open</div>
+      </a>
+      <a href="tel:108" class="hosp-item">
+        <div>
+          <div class="hosp-name">MIOT International</div>
+          <div class="hosp-dist">2.2 km · ICU Available</div>
+        </div>
+        <div class="hosp-tag">Open</div>
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <strong>CodeFlux · Emergency AI</strong> · ITERYX '26 · St. Joseph's College of Engineering<br>
+  Problem Statement #40 · Healthcare Tech Domain<br>
+  Always dial <strong>108</strong> in a real emergency · For demo use only
+</footer>
+
+</body>
+</html>
