@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FirstAid+ · Emergency AI</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -14,22 +15,22 @@
   --bg:#F6F5F1; --card:#FFFFFF; --text:#18181A; --muted:#68676B; --border:#E3E1D9;
   --r:14px; --r-sm:10px;
 }
+html, body { height:100%; }
 body { font-family:'DM Sans',sans-serif; background:#fff; color:var(--text); min-height:100vh; font-size:15px; line-height:1.5; overflow-x:hidden; }
 
-/* ── PAGE SYSTEM ── */
+/* ── PAGE SYSTEM: only one page visible at a time ── */
 .page { display:none; min-height:100vh; }
 .page.active { display:block; }
 
-/* Splash needs flex, so override display for it specifically when active */
 #pg-splash.active {
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  background:#fff;
-  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:relative; background:#fff; min-height:100vh;
 }
+#pg-lang.active {
+  display:flex; flex-direction:column; align-items:center; background:var(--bg);
+}
+#pg-home.active  { display:block; background:var(--bg); }
+#pg-detail.active { display:block; background:var(--bg); }
 
 /* ── SPLASH ── */
 .splash-inner { display:flex; flex-direction:column; align-items:center; animation:fadeUp .7s cubic-bezier(.34,1.4,.64,1) both; }
@@ -51,16 +52,13 @@ body { font-family:'DM Sans',sans-serif; background:#fff; color:var(--text); min
 .splash-timer { position:absolute; bottom:52px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:10px; }
 .timer-dots { display:flex; gap:7px; }
 .timer-dot { width:8px; height:8px; border-radius:50%; background:#E0DDD6; }
-.d1{animation:dotFill 1s linear .3s forwards}
-.d2{animation:dotFill 1s linear 1.3s forwards}
-.d3{animation:dotFill 1s linear 2.3s forwards}
-.d4{animation:dotFill 1s linear 3.3s forwards}
+.d1{animation:dotFill 1s linear .3s forwards} .d2{animation:dotFill 1s linear 1.3s forwards}
+.d3{animation:dotFill 1s linear 2.3s forwards} .d4{animation:dotFill 1s linear 3.3s forwards}
 .d5{animation:dotFill 1s linear 4.3s forwards}
 @keyframes dotFill { 0%{background:#E0DDD6;transform:scale(1)} 30%{background:var(--red);transform:scale(1.4)} 100%{background:var(--red);transform:scale(1)} }
 .timer-label { font-size:.7rem; color:#B0AEA8; letter-spacing:.8px; font-weight:500; }
 
 /* ── LANGUAGE ── */
-#pg-lang.active { display:flex; flex-direction:column; align-items:center; background:var(--bg); }
 .lang-top { width:100%; background:var(--red); padding:3rem 1.5rem 3.5rem; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative; }
 .lang-top-icon { width:52px; height:52px; background:rgba(255,255,255,.18); border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid rgba(255,255,255,.3); margin-bottom:1rem; }
 .lang-top-icon svg { width:26px; height:26px; }
@@ -78,7 +76,7 @@ body { font-family:'DM Sans',sans-serif; background:#fff; color:var(--text); min
 .lang-footer-note { text-align:center; font-size:.73rem; color:var(--muted); line-height:1.8; }
 .lang-footer-note strong { color:var(--red); }
 
-/* ── HEADER (shared) ── */
+/* ── HEADER ── */
 .app-header { background:var(--red); padding:0 1.25rem; height:58px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:200; box-shadow:0 2px 16px rgba(196,30,30,.4); }
 .logo { display:flex; align-items:center; gap:10px; cursor:pointer; }
 .logo-cross { width:34px; height:34px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -88,10 +86,8 @@ body { font-family:'DM Sans',sans-serif; background:#fff; color:var(--text); min
 .header-lang-btn { background:rgba(255,255,255,.18); color:#fff; border:1.5px solid rgba(255,255,255,.45); border-radius:20px; padding:5px 14px; font-family:'DM Sans',sans-serif; font-size:.75rem; font-weight:600; cursor:pointer; }
 .header-lang-btn:hover { background:rgba(255,255,255,.28); }
 
-/* ── HOME PAGE ── */
-#pg-home.active { display:block; background:var(--bg); }
+/* ── HOME ── */
 .home-main { max-width:500px; margin:0 auto; padding:1.1rem 1rem 2.5rem; display:flex; flex-direction:column; gap:.9rem; }
-
 .sos { display:flex; align-items:center; justify-content:space-between; background:var(--red); border-radius:var(--r); padding:1rem 1.25rem; text-decoration:none; color:#fff; animation:sosPulse 2.2s ease-in-out infinite; }
 @keyframes sosPulse { 0%,100%{box-shadow:0 0 0 0 rgba(196,30,30,.45)} 55%{box-shadow:0 0 0 10px rgba(196,30,30,0)} }
 .sos-left .tiny { font-size:.64rem; font-weight:600; letter-spacing:1.3px; text-transform:uppercase; opacity:.85; }
@@ -99,7 +95,6 @@ body { font-family:'DM Sans',sans-serif; background:#fff; color:var(--text); min
 .sos-left .sub { font-size:.77rem; opacity:.85; margin-top:1px; }
 .sos-icon { width:50px; height:50px; background:rgba(255,255,255,.2); border:2px solid rgba(255,255,255,.4); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .sos-icon svg { width:24px; height:24px; stroke:#fff; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
-
 .card { background:var(--card); border-radius:var(--r); border:1px solid var(--border); padding:1.1rem 1.15rem; }
 .card-title { font-family:'Rajdhani',sans-serif; font-size:.9rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text); display:flex; align-items:center; gap:7px; margin-bottom:.9rem; }
 .card-title svg { width:16px; height:16px; flex-shrink:0; color:var(--red); fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
@@ -107,11 +102,10 @@ textarea { width:100%; background:var(--bg); border:1.5px solid var(--border); b
 textarea:focus { border-color:var(--red); }
 textarea::placeholder { color:#bbb; }
 .input-row { display:flex; gap:8px; margin-top:.7rem; }
-.mic-btn { display:flex; align-items:center; gap:6px; background:var(--red-lt); color:var(--red); border:1.5px solid #F0BFBF; border-radius:30px; padding:8px 16px; font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:600; cursor:pointer; text-decoration:none; flex-shrink:0; }
+.mic-btn { display:flex; align-items:center; gap:6px; background:var(--red-lt); color:var(--red); border:1.5px solid #F0BFBF; border-radius:30px; padding:8px 16px; font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:600; cursor:pointer; flex-shrink:0; }
 .mic-btn svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
 .analyze-btn { flex:1; background:var(--red); color:#fff; border:none; border-radius:30px; padding:10px 16px; font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:.8px; text-transform:uppercase; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .18s; }
 .analyze-btn:hover { background:var(--red-dk); }
-
 .slabel { font-size:.67rem; font-weight:600; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); margin-bottom:-.15rem; }
 .sev-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
 .sev-card { border-radius:var(--r-sm); padding:.7rem .6rem; text-align:center; border:1.5px solid transparent; }
@@ -119,38 +113,36 @@ textarea::placeholder { color:#bbb; }
 .sev-card.moderate { background:var(--amber-lt); border-color:#F5CF8A; }
 .sev-card.mild     { background:var(--green-lt); border-color:#9FD9B8; }
 .sev-dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-bottom:4px; }
-.critical .sev-dot { background:var(--red); }
-.moderate .sev-dot { background:var(--amber); }
-.mild .sev-dot     { background:var(--green); }
+.critical .sev-dot { background:var(--red); } .moderate .sev-dot { background:var(--amber); } .mild .sev-dot { background:var(--green); }
 .sev-title { display:block; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:.9rem; }
-.critical .sev-title { color:var(--red-dk); }
-.moderate .sev-title { color:#7A4500; }
-.mild .sev-title     { color:#0D5C30; }
+.critical .sev-title { color:var(--red-dk); } .moderate .sev-title { color:#7A4500; } .mild .sev-title { color:#0D5C30; }
 .sev-eg    { display:block; font-size:.68rem; color:var(--muted); margin-top:2px; line-height:1.3; }
 .sev-eg-ta { display:none; font-size:.68rem; color:var(--muted); margin-top:2px; line-height:1.3; }
-body.lang-ta .sev-eg    { display:none; }
-body.lang-ta .sev-eg-ta { display:block; }
-
+body.lang-ta .sev-eg    { display:none; } body.lang-ta .sev-eg-ta { display:block; }
 .section-heading { font-family:'Rajdhani',sans-serif; font-size:1rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text); display:flex; align-items:center; gap:7px; }
 .section-heading svg { width:16px; height:16px; color:var(--red); fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
-
-/* ── EMERGENCY TYPE CARDS ── */
 .em-cards { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:7px; }
-.em-card {
-  display:flex; flex-direction:column; align-items:center; gap:5px;
-  padding:.8rem .4rem .7rem;
-  background:var(--card); border-radius:var(--r-sm); border:2px solid var(--border);
-  cursor:pointer; text-align:center;
-  transition:border-color .15s,background .15s,transform .15s;
-}
+.em-card { display:flex; flex-direction:column; align-items:center; gap:5px; padding:.8rem .4rem .7rem; background:var(--card); border-radius:var(--r-sm); border:2px solid var(--border); cursor:pointer; text-align:center; transition:border-color .15s,background .15s,transform .15s; }
 .em-card:hover { border-color:var(--red); background:var(--red-lt); transform:translateY(-2px); }
 .em-card:active { transform:scale(.96); }
 .em-emoji { font-size:1.5rem; line-height:1; }
 .em-name  { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:.72rem; color:var(--muted); line-height:1.2; }
 
-/* Hospitals */
-.map-box { background:#E8EAE4; border-radius:var(--r-sm); height:130px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; color:var(--muted); font-size:.8rem; border:1px dashed #C5C7C0; margin-bottom:.8rem; }
-.map-box svg { width:26px; height:26px; opacity:.4; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; }
+/* ── MAP ── */
+#map {
+  height: 220px;
+  border-radius: var(--r-sm);
+  margin-bottom: .8rem;
+  /* CRITICAL: Leaflet needs a visible, non-zero-height container */
+  display: block;
+  width: 100%;
+  background: #E8EAE4;
+  position: relative;
+  z-index: 1;
+}
+.map-placeholder { height:220px; border-radius:var(--r-sm); background:#E8EAE4; border:1px dashed #C5C7C0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; color:var(--muted); font-size:.8rem; margin-bottom:.8rem; }
+.map-placeholder svg { width:26px; height:26px; opacity:.4; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; }
+
 .hosp-list { display:flex; flex-direction:column; gap:7px; }
 .hosp-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:.7rem .9rem; background:var(--bg); border-radius:var(--r-sm); border:1px solid var(--border); text-decoration:none; color:inherit; }
 .hosp-item:hover { border-color:#bbb; }
@@ -158,22 +150,15 @@ body.lang-ta .sev-eg-ta { display:block; }
 .hosp-dist { font-size:.74rem; color:var(--muted); margin-top:1px; }
 .hosp-tag  { background:var(--green-lt); color:var(--green); font-size:.71rem; font-weight:600; padding:3px 10px; border-radius:20px; border:1px solid #9FD9B8; white-space:nowrap; flex-shrink:0; }
 
-/* ── DETAIL PAGE ── */
-#pg-detail.active { display:block; background:var(--bg); }
+/* ── DETAIL ── */
 .detail-main { max-width:500px; margin:0 auto; padding:1.1rem 1rem 2.5rem; display:flex; flex-direction:column; gap:.9rem; }
-
-/* Back button */
 .back-btn { display:inline-flex; align-items:center; gap:7px; background:var(--card); border:1.5px solid var(--border); border-radius:30px; padding:7px 16px; font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:600; color:var(--text); cursor:pointer; transition:border-color .15s; width:fit-content; }
 .back-btn:hover { border-color:var(--red); color:var(--red); }
 .back-btn svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
-
-/* Detected badge */
 .detected-box { display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:.9rem 1.15rem; }
 .detected-box .d-icon { font-size:1.4rem; }
 .detected-box .d-label { font-size:.65rem; font-weight:600; text-transform:uppercase; letter-spacing:1.1px; color:var(--muted); }
 .detected-box .d-name  { font-family:'Rajdhani',sans-serif; font-size:1.1rem; font-weight:700; color:var(--text); }
-
-/* Full instruction panel */
 .instr-panel { background:var(--card); border-radius:var(--r); border:2px solid var(--red); padding:1.15rem 1.15rem; }
 .panel-head { display:flex; align-items:center; gap:10px; margin-bottom:1rem; padding-bottom:.8rem; border-bottom:1px solid var(--border); }
 .panel-icon { font-size:1.6rem; line-height:1; }
@@ -182,36 +167,24 @@ body.lang-ta .sev-eg-ta { display:block; }
 .panel-badge { margin-left:auto; font-size:.69rem; font-weight:600; padding:3px 10px; border-radius:20px; flex-shrink:0; }
 .badge-crit { background:var(--red-lt); color:var(--red); border:1px solid #F5BEBE; }
 .badge-mod  { background:var(--amber-lt); color:var(--amber); border:1px solid #F5CF8A; }
-
 .steps { display:flex; flex-direction:column; }
 .step  { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
-.step:first-child { padding-top:0; }
-.step:last-child  { border-bottom:none; padding-bottom:0; }
+.step:first-child { padding-top:0; } .step:last-child { border-bottom:none; padding-bottom:0; }
 .step-num  { width:28px; height:28px; border-radius:50%; background:var(--red); color:#fff; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:.9rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
 .step-body .en { font-weight:500; font-size:.93rem; color:var(--text); line-height:1.35; }
 .step-body .ta { font-size:.78rem; color:var(--muted); margin-top:2px; font-style:italic; line-height:1.4; }
 body.lang-ta .step-body .en { display:none; }
 body.lang-ta .step-body .ta { font-style:normal; font-size:.93rem; color:var(--text); font-weight:500; }
 body.lang-en .step-body .ta { display:none; }
-
 .warn { padding:.75rem 1rem; border-radius:var(--r-sm); font-size:.8rem; line-height:1.55; }
 .warn b { display:block; font-weight:600; margin-bottom:2px; }
 .warn.amber { background:var(--amber-lt); border:1px solid #F5CF8A; color:#7A4500; }
 .warn.red   { background:var(--red-lt);   border:1px solid #F5BEBE; color:var(--red-dk); }
 .warn.green { background:var(--green-lt); border:1px solid #9FD9B8; color:#0D5C30; }
-
-/* Not found state */
 .not-found { background:var(--card); border-radius:var(--r); border:1px solid var(--border); padding:2rem 1.5rem; text-align:center; display:flex; flex-direction:column; align-items:center; gap:.6rem; }
 .not-found .nf-icon { font-size:2.5rem; }
 .not-found .nf-title { font-family:'Rajdhani',sans-serif; font-size:1.2rem; font-weight:700; color:var(--text); }
 .not-found .nf-sub { font-size:.82rem; color:var(--muted); line-height:1.55; }
-
-/* Loading state */
-.loading-state { background:var(--card); border-radius:var(--r); border:2px solid var(--red); padding:2rem 1.5rem; text-align:center; display:flex; flex-direction:column; align-items:center; gap:1rem; }
-.loading-spinner { width:40px; height:40px; border:3px solid var(--red-lt); border-top:3px solid var(--red); border-radius:50%; animation:spin .8s linear infinite; }
-@keyframes spin { to { transform:rotate(360deg); } }
-.loading-text { font-family:'Rajdhani',sans-serif; font-size:1.1rem; font-weight:700; color:var(--text); }
-.loading-sub { font-size:.8rem; color:var(--muted); }
 
 footer { text-align:center; padding:1.25rem 1rem .5rem; font-size:.72rem; color:var(--muted); line-height:1.9; }
 footer strong { color:var(--red); }
@@ -219,9 +192,7 @@ footer strong { color:var(--red); }
 </head>
 <body class="lang-en">
 
-<!-- ════════════════════════════
-     PAGE 1 — SPLASH
-════════════════════════════ -->
+<!-- PAGE 1 — SPLASH -->
 <div id="pg-splash" class="page active">
   <div class="splash-inner">
     <div class="splash-circle">
@@ -244,9 +215,7 @@ footer strong { color:var(--red); }
   </div>
 </div>
 
-<!-- ════════════════════════════
-     PAGE 2 — LANGUAGE
-════════════════════════════ -->
+<!-- PAGE 2 — LANGUAGE -->
 <div id="pg-lang" class="page">
   <div class="lang-top">
     <div class="lang-top-icon">
@@ -275,9 +244,7 @@ footer strong { color:var(--red); }
   </div>
 </div>
 
-<!-- ════════════════════════════
-     PAGE 3 — HOME
-════════════════════════════ -->
+<!-- PAGE 3 — HOME -->
 <div id="pg-home" class="page">
   <header class="app-header">
     <div class="logo" onclick="goHome()">
@@ -290,7 +257,6 @@ footer strong { color:var(--red); }
     </div>
     <button class="header-lang-btn" id="langToggle" onclick="toggleLang()">தமிழ்</button>
   </header>
-
   <div class="home-main">
 
     <a href="tel:108" class="sos">
@@ -304,7 +270,6 @@ footer strong { color:var(--red); }
       </div>
     </a>
 
-    <!-- Search + Analyze -->
     <div class="card">
       <div class="card-title">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -322,7 +287,6 @@ footer strong { color:var(--red); }
       </div>
     </div>
 
-    <!-- Severity -->
     <p class="slabel" data-en="Severity Detection" data-ta="தீவிரத்தன்மை கண்டறிதல்">Severity Detection</p>
     <div class="sev-grid">
       <div class="sev-card critical">
@@ -345,46 +309,36 @@ footer strong { color:var(--red); }
       </div>
     </div>
 
-    <!-- Emergency Type Cards -->
     <div class="section-heading">
       <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       <span data-en="Select Emergency Type" data-ta="அவசரநிலை வகையை தேர்ந்தெடுக்கவும்">Select Emergency Type</span>
     </div>
-
     <div class="em-cards">
-      <div class="em-card" onclick="goDetail('cardiac')">
-        <span class="em-emoji">❤️</span>
-        <span class="em-name" data-en="Cardiac Arrest" data-ta="இதய செயலிழப்பு">Cardiac Arrest</span>
-      </div>
-      <div class="em-card" onclick="goDetail('bleeding')">
-        <span class="em-emoji">🩸</span>
-        <span class="em-name" data-en="Bleeding" data-ta="இரத்தப்போக்கு">Bleeding</span>
-      </div>
-      <div class="em-card" onclick="goDetail('choking')">
-        <span class="em-emoji">😮</span>
-        <span class="em-name" data-en="Choking" data-ta="தொண்டை அடைப்பு">Choking</span>
-      </div>
-      <div class="em-card" onclick="goDetail('burns')">
-        <span class="em-emoji">🔥</span>
-        <span class="em-name" data-en="Burns" data-ta="தீக்காயம்">Burns</span>
-      </div>
-      <div class="em-card" onclick="goDetail('fracture')">
-        <span class="em-emoji">🦴</span>
-        <span class="em-name" data-en="Fracture" data-ta="எலும்பு முறிவு">Fracture</span>
-      </div>
+      <div class="em-card" onclick="goDetail('cardiac')"><span class="em-emoji">❤️</span><span class="em-name" data-en="Cardiac Arrest" data-ta="இதய செயலிழப்பு">Cardiac Arrest</span></div>
+      <div class="em-card" onclick="goDetail('bleeding')"><span class="em-emoji">🩸</span><span class="em-name" data-en="Bleeding" data-ta="இரத்தப்போக்கு">Bleeding</span></div>
+      <div class="em-card" onclick="goDetail('choking')"><span class="em-emoji">😮</span><span class="em-name" data-en="Choking" data-ta="தொண்டை அடைப்பு">Choking</span></div>
+      <div class="em-card" onclick="goDetail('burns')"><span class="em-emoji">🔥</span><span class="em-name" data-en="Burns" data-ta="தீக்காயம்">Burns</span></div>
+      <div class="em-card" onclick="goDetail('fracture')"><span class="em-emoji">🦴</span><span class="em-name" data-en="Fracture" data-ta="எலும்பு முறிவு">Fracture</span></div>
     </div>
 
-    <!-- Hospitals -->
     <div class="card">
       <div class="card-title">
         <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
         <span data-en="Nearby Hospitals" data-ta="அருகிலுள்ள மருத்துவமனைகள்">Nearby Hospitals</span>
       </div>
-      <div class="map-box">
+
+      <!-- Map container shown once GPS granted, placeholder shown until then -->
+      <div id="map-placeholder" class="map-placeholder">
         <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M2 8h20M8 2v20"/></svg>
-        <span data-en="Map loads with GPS permission" data-ta="GPS அனுமதியுடன் வரைபடம் ஏற்றப்படும்">Map loads with GPS permission</span>
+        <span id="map-status" data-en="Tap to load map with GPS" data-ta="GPS மூலம் வரைபடம் ஏற்ற தட்டவும்">Tap to load map with GPS</span>
+        <button onclick="initMap()" style="margin-top:6px;background:var(--red);color:#fff;border:none;border-radius:20px;padding:6px 18px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;">
+          <span data-en="Enable GPS" data-ta="GPS இயக்கவும்">Enable GPS</span>
+        </button>
       </div>
-      <div class="hosp-list">
+      <div id="map" style="display:none;"></div>
+      <p style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem;" id="map-note" data-en="Showing hospitals within 2 km" data-ta="2 கி.மீ. உள்ள மருத்துவமனைகள்" style="display:none;"></p>
+
+      <div class="hosp-list" id="hosp-list">
         <a href="tel:108" class="hosp-item">
           <div><div class="hosp-name">Government General Hospital</div><div class="hosp-dist">0.8 km · Open 24/7 · Emergency Wing</div></div>
           <div class="hosp-tag">Nearest</div>
@@ -408,9 +362,7 @@ footer strong { color:var(--red); }
   </footer>
 </div>
 
-<!-- ════════════════════════════
-     PAGE 4 — DETAIL / INSTRUCTION
-════════════════════════════ -->
+<!-- PAGE 4 — DETAIL -->
 <div id="pg-detail" class="page">
   <header class="app-header">
     <div class="logo" onclick="goHome()">
@@ -423,15 +375,11 @@ footer strong { color:var(--red); }
     </div>
     <button class="header-lang-btn" id="langToggle2" onclick="toggleLang()">தமிழ்</button>
   </header>
-
   <div class="detail-main">
-
     <button class="back-btn" onclick="goHome()">
       <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
       <span data-en="Back to Home" data-ta="முகப்புக்கு திரும்பு">Back to Home</span>
     </button>
-
-    <!-- Detected box (only shown after analyze) -->
     <div class="detected-box" id="detectedBox" style="display:none">
       <span class="d-icon" id="detectedIcon"></span>
       <div>
@@ -439,11 +387,7 @@ footer strong { color:var(--red); }
         <div class="d-name" id="detectedName"></div>
       </div>
     </div>
-
-    <!-- Instructions panel — filled by JS -->
     <div class="instr-panel" id="instrPanel"></div>
-
-    <!-- SOS again -->
     <a href="tel:108" class="sos">
       <div class="sos-left">
         <div class="tiny" data-en="Call Ambulance Now" data-ta="இப்போது ஆம்புலன்ஸ் அழைக்கவும்">Call Ambulance Now</div>
@@ -454,106 +398,88 @@ footer strong { color:var(--red); }
         <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.48 12 19.79 19.79 0 011.43 3.4 2 2 0 013.4 1.22h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
       </div>
     </a>
-
   </div>
 </div>
 
-<!-- ════════════════════════════
-     DATA + LOGIC
-════════════════════════════ -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-/* ── EMERGENCY DATA ── */
 const EMERGENCIES = {
   cardiac: {
-    icon: '❤️',
-    en: 'Cardiac Arrest',
-    ta: 'இதய செயலிழப்பு',
-    badge: 'crit',
-    badgeText: { en: '🔴 Critical', ta: '🔴 மிகவும் தீவிரம்' },
-    steps: [
-      { en: 'Check responsiveness — tap shoulders and shout loudly', ta: 'தோள்களை தட்டி சத்தமாக கூப்பிடுங்கள்' },
-      { en: 'Call 108 immediately if there is no response', ta: 'பதில் இல்லாவிட்டால் உடனே 108 அழைக்கவும்' },
-      { en: 'Lay person flat on back on a hard surface', ta: 'கடினமான தளத்தில் மல்லாக்க படுக்க வையுங்கள்' },
-      { en: 'Start CPR — push hard and fast on chest center, 100 times per minute', ta: 'மார்பின் மையத்தில் நிமிடத்திற்கு 100 முறை வேகமாக அழுத்துங்கள்' },
-      { en: 'Give 2 rescue breaths after every 30 compressions', ta: '30 அழுத்தங்களுக்கு பிறகு 2 மூச்சு கொடுங்கள்' },
-      { en: 'Do NOT stop CPR until the ambulance arrives', ta: 'ஆம்புலன்ஸ் வரும் வரை நிறுத்தாதீர்கள்' },
+    icon:'❤️', en:'Cardiac Arrest', ta:'இதய செயலிழப்பு', badge:'crit',
+    badgeText:{en:'🔴 Critical',ta:'🔴 மிகவும் தீவிரம்'},
+    steps:[
+      {en:'Check responsiveness — tap shoulders and shout loudly',ta:'தோள்களை தட்டி சத்தமாக கூப்பிடுங்கள்'},
+      {en:'Call 108 immediately if there is no response',ta:'பதில் இல்லாவிட்டால் உடனே 108 அழைக்கவும்'},
+      {en:'Lay person flat on back on a hard surface',ta:'கடினமான தளத்தில் மல்லாக்க படுக்க வையுங்கள்'},
+      {en:'Start CPR — push hard and fast on chest center, 100 times per minute',ta:'மார்பின் மையத்தில் நிமிடத்திற்கு 100 முறை வேகமாக அழுத்துங்கள்'},
+      {en:'Give 2 rescue breaths after every 30 compressions',ta:'30 அழுத்தங்களுக்கு பிறகு 2 மூச்சு கொடுங்கள்'},
+      {en:'Do NOT stop CPR until the ambulance arrives',ta:'ஆம்புலன்ஸ் வரும் வரை நிறுத்தாதீர்கள்'},
     ],
-    warn: { type: 'amber', en: '⚠️ Remember', ta: '⚠️ நினைவில் வையுங்கள்', text_en: 'Keep pushing even if you hear a crack — broken ribs can heal, but stopping CPR can be fatal.', text_ta: 'சொடுக்கு சத்தம் வந்தாலும் தொடர்ந்து அழுத்துங்கள் — முறிந்த விலா எலும்பு குணமாகும், CPR நிறுத்துவது உயிரை பறிக்கும்.' }
+    warn:{type:'amber',en:'⚠️ Remember',ta:'⚠️ நினைவில் வையுங்கள்',text_en:'Keep pushing even if you hear a crack — broken ribs can heal, but stopping CPR can be fatal.',text_ta:'சொடுக்கு சத்தம் வந்தாலும் தொடர்ந்து அழுத்துங்கள் — முறிந்த விலா எலும்பு குணமாகும்.'}
   },
   bleeding: {
-    icon: '🩸',
-    en: 'Severe Bleeding',
-    ta: 'கடுமையான இரத்தப்போக்கு',
-    badge: 'mod',
-    badgeText: { en: '🟡 Moderate', ta: '🟡 மிதமான' },
-    steps: [
-      { en: 'Stay calm and wear gloves if available', ta: 'அமைதியாக இருங்கள், கையுறை இருந்தால் அணியுங்கள்' },
-      { en: 'Apply firm, direct pressure with a clean cloth or bandage', ta: 'சுத்தமான துணியால் நேரடியாக வலுவாக அழுத்துங்கள்' },
-      { en: 'Elevate the injured limb above heart level', ta: 'காயமடைந்த உறுப்பை இதயத்தை விட மேல்நிலையில் வையுங்கள்' },
-      { en: 'Do NOT remove the cloth — add more on top if soaked', ta: 'துணியை அகற்றாதீர்கள் — நனைந்தால் மேலே இன்னொன்று சேர்க்கவும்' },
-      { en: 'Call 108 if bleeding does not stop within 10 minutes', ta: '10 நிமிடத்தில் நிற்காவிட்டால் 108 அழைக்கவும்' },
+    icon:'🩸', en:'Severe Bleeding', ta:'கடுமையான இரத்தப்போக்கு', badge:'mod',
+    badgeText:{en:'🟡 Moderate',ta:'🟡 மிதமான'},
+    steps:[
+      {en:'Stay calm and wear gloves if available',ta:'அமைதியாக இருங்கள், கையுறை இருந்தால் அணியுங்கள்'},
+      {en:'Apply firm, direct pressure with a clean cloth or bandage',ta:'சுத்தமான துணியால் நேரடியாக வலுவாக அழுத்துங்கள்'},
+      {en:'Elevate the injured limb above heart level',ta:'காயமடைந்த உறுப்பை இதயத்தை விட மேல்நிலையில் வையுங்கள்'},
+      {en:'Do NOT remove the cloth — add more on top if soaked',ta:'துணியை அகற்றாதீர்கள் — நனைந்தால் மேலே இன்னொன்று சேர்க்கவும்'},
+      {en:'Call 108 if bleeding does not stop within 10 minutes',ta:'10 நிமிடத்தில் நிற்காவிட்டால் 108 அழைக்கவும்'},
     ],
-    warn: { type: 'red', en: '🚨 Do NOT', ta: '🚨 செய்யாதீர்கள்', text_en: 'Never remove embedded objects from wounds. Never use a tourniquet unless trained.', text_ta: 'காயத்தில் உள்ள பொருட்களை அகற்றாதீர்கள். பயிற்சி இல்லாமல் tourniquet பயன்படுத்தாதீர்கள்.' }
+    warn:{type:'red',en:'🚨 Do NOT',ta:'🚨 செய்யாதீர்கள்',text_en:'Never remove embedded objects from wounds. Never use a tourniquet unless trained.',text_ta:'காயத்தில் உள்ள பொருட்களை அகற்றாதீர்கள்.'}
   },
   choking: {
-    icon: '😮',
-    en: 'Choking',
-    ta: 'தொண்டை அடைப்பு',
-    badge: 'crit',
-    badgeText: { en: '🔴 Critical', ta: '🔴 மிகவும் தீவிரம்' },
-    steps: [
-      { en: 'Ask "Are you choking?" — if they can cough, encourage it strongly', ta: 'இருமல் வந்தால் ஊக்குவிக்கவும் — வரவில்லையெனில் உதவுங்கள்' },
-      { en: 'Stand behind them and lean them slightly forward', ta: 'பின்னால் நின்று சற்று முன்பக்கம் சாய்க்கவும்' },
-      { en: 'Give 5 firm back blows between shoulder blades with heel of hand', ta: 'தோள்பட்டை இடையில் ஐந்து முறை உறுதியாக தட்டவும்' },
-      { en: 'Give 5 abdominal thrusts (Heimlich) — fist above navel, pull inward and upward', ta: 'தொப்புளுக்கு மேல் முஷ்டியை வைத்து உள்ளே மேலே இழுக்கவும்' },
-      { en: 'Alternate 5 back blows and 5 thrusts until object is clear or 108 arrives', ta: 'பொருள் வெளியேறும் வரை மாற்றி மாற்றி செய்யவும்' },
+    icon:'😮', en:'Choking', ta:'தொண்டை அடைப்பு', badge:'crit',
+    badgeText:{en:'🔴 Critical',ta:'🔴 மிகவும் தீவிரம்'},
+    steps:[
+      {en:'Ask "Are you choking?" — if they can cough, encourage it strongly',ta:'இருமல் வந்தால் ஊக்குவிக்கவும்'},
+      {en:'Stand behind them and lean them slightly forward',ta:'பின்னால் நின்று சற்று முன்பக்கம் சாய்க்கவும்'},
+      {en:'Give 5 firm back blows between shoulder blades with heel of hand',ta:'தோள்பட்டை இடையில் ஐந்து முறை உறுதியாக தட்டவும்'},
+      {en:'Give 5 abdominal thrusts (Heimlich) — fist above navel, pull inward and upward',ta:'தொப்புளுக்கு மேல் முஷ்டியை வைத்து உள்ளே மேலே இழுக்கவும்'},
+      {en:'Alternate 5 back blows and 5 thrusts until object is clear or 108 arrives',ta:'பொருள் வெளியேறும் வரை மாற்றி மாற்றி செய்யவும்'},
     ],
-    warn: { type: 'amber', en: '⚠️ If unconscious', ta: '⚠️ நினைவிழந்தால்', text_en: 'Lay them flat and begin CPR immediately. Do NOT do blind finger sweeps inside the mouth.', text_ta: 'தட்டையாக படுக்க வைத்து CPR ஆரம்பிக்கவும். வாயில் விரலை குருட்டாக துடைக்காதீர்கள்.' }
+    warn:{type:'amber',en:'⚠️ If unconscious',ta:'⚠️ நினைவிழந்தால்',text_en:'Lay them flat and begin CPR immediately.',text_ta:'தட்டையாக படுக்க வைத்து CPR ஆரம்பிக்கவும்.'}
   },
   burns: {
-    icon: '🔥',
-    en: 'Burns',
-    ta: 'தீக்காயம்',
-    badge: 'mod',
-    badgeText: { en: '🟡 Moderate', ta: '🟡 மிதமான' },
-    steps: [
-      { en: 'Remove from heat source immediately and ensure the area is safe', ta: 'உடனே தீ மூலத்திலிருந்து விலக்கவும்' },
-      { en: 'Cool the burn under running cool water for at least 10 minutes', ta: 'குளிர்ந்த தண்ணீரில் குறைந்தது 10 நிமிடம் கழுவவும்' },
-      { en: 'Remove clothing and jewellery near the burn — unless stuck to skin', ta: 'தோலில் ஒட்டியிருந்தால் தவிர — உடை, நகை அகற்றவும்' },
-      { en: 'Cover loosely with a clean, non-fluffy cloth or cling film', ta: 'சுத்தமான துணியால் தளர்வாக மூடவும்' },
-      { en: 'Call 108 if burn is large, deep, or on face, hands, or genitals', ta: 'பெரிய அல்லது ஆழமான தீக்காயம் இருந்தால் 108 அழைக்கவும்' },
+    icon:'🔥', en:'Burns', ta:'தீக்காயம்', badge:'mod',
+    badgeText:{en:'🟡 Moderate',ta:'🟡 மிதமான'},
+    steps:[
+      {en:'Remove from heat source immediately and ensure the area is safe',ta:'உடனே தீ மூலத்திலிருந்து விலக்கவும்'},
+      {en:'Cool the burn under running cool water for at least 10 minutes',ta:'குளிர்ந்த தண்ணீரில் குறைந்தது 10 நிமிடம் கழுவவும்'},
+      {en:'Remove clothing and jewellery near the burn — unless stuck to skin',ta:'உடை, நகை அகற்றவும் — தோலில் ஒட்டியிருந்தால் தவிர'},
+      {en:'Cover loosely with a clean, non-fluffy cloth or cling film',ta:'சுத்தமான துணியால் தளர்வாக மூடவும்'},
+      {en:'Call 108 if burn is large, deep, or on face, hands, or genitals',ta:'பெரிய அல்லது ஆழமான தீக்காயம் இருந்தால் 108 அழைக்கவும்'},
     ],
-    warn: { type: 'red', en: '🚨 Never do this', ta: '🚨 இதை ஒருபோதும் செய்யாதீர்கள்', text_en: 'No ice · No butter · No toothpaste · No oil · Do NOT burst blisters', text_ta: 'பனிக்கட்டி வேண்டாம் · வெண்ணெய் வேண்டாம் · பல் விளக்கி வேண்டாம் · கொப்புளங்களை உடைக்காதீர்கள்' }
+    warn:{type:'red',en:'🚨 Never do this',ta:'🚨 இதை ஒருபோதும் செய்யாதீர்கள்',text_en:'No ice · No butter · No toothpaste · No oil · Do NOT burst blisters',text_ta:'பனிக்கட்டி வேண்டாம் · வெண்ணெய் வேண்டாம் · கொப்புளங்களை உடைக்காதீர்கள்'}
   },
   fracture: {
-    icon: '🦴',
-    en: 'Fracture',
-    ta: 'எலும்பு முறிவு',
-    badge: 'mod',
-    badgeText: { en: '🟡 Moderate', ta: '🟡 மிதமான' },
-    steps: [
-      { en: 'Keep the person still — do NOT move the injured limb at all', ta: 'காயமடைந்த உறுப்பை நகர்த்தாதீர்கள்' },
-      { en: 'Immobilise the joint using a splint or rolled-up newspaper', ta: 'மூட்டை நிலைப்படுத்தவும் — தாள் அல்லது கம்பு பயன்படுத்தவும்' },
-      { en: 'Apply an ice pack wrapped in cloth to reduce swelling and pain', ta: 'துணியில் சுற்றிய ஐஸ் வைத்து வீக்கத்தை குறைக்கவும்' },
-      { en: 'If it is an open fracture, cover wound with clean cloth and call 108', ta: 'திறந்த எலும்பு முறிவு இருந்தால் மூடி 108 அழைக்கவும்' },
-      { en: 'Transport carefully to hospital — support the limb throughout', ta: 'உறுப்பை தாங்கிக்கொண்டு மெதுவாக மருத்துவமனைக்கு அழைத்து செல்லவும்' },
+    icon:'🦴', en:'Fracture', ta:'எலும்பு முறிவு', badge:'mod',
+    badgeText:{en:'🟡 Moderate',ta:'🟡 மிதமான'},
+    steps:[
+      {en:'Keep the person still — do NOT move the injured limb at all',ta:'காயமடைந்த உறுப்பை நகர்த்தாதீர்கள்'},
+      {en:'Immobilise the joint using a splint or rolled-up newspaper',ta:'மூட்டை நிலைப்படுத்தவும் — தாள் அல்லது கம்பு பயன்படுத்தவும்'},
+      {en:'Apply an ice pack wrapped in cloth to reduce swelling and pain',ta:'துணியில் சுற்றிய ஐஸ் வைத்து வீக்கத்தை குறைக்கவும்'},
+      {en:'If it is an open fracture, cover wound with clean cloth and call 108',ta:'திறந்த எலும்பு முறிவு இருந்தால் மூடி 108 அழைக்கவும்'},
+      {en:'Transport carefully to hospital — support the limb throughout',ta:'உறுப்பை தாங்கிக்கொண்டு மெதுவாக மருத்துவமனைக்கு அழைத்து செல்லவும்'},
     ],
-    warn: { type: 'green', en: '✅ Good to know', ta: '✅ தெரிந்துகொள்ளுங்கள்', text_en: 'Never try to straighten the bone yourself. Support it in exactly the position you find it.', text_ta: 'எலும்பை நேராக்க முயற்சிக்காதீர்கள். கண்ட நிலையிலேயே தாங்குங்கள்.' }
+    warn:{type:'green',en:'✅ Good to know',ta:'✅ தெரிந்துகொள்ளுங்கள்',text_en:'Never try to straighten the bone yourself. Support it in exactly the position you find it.',text_ta:'எலும்பை நேராக்க முயற்சிக்காதீர்கள். கண்ட நிலையிலேயே தாங்குங்கள்.'}
   }
 };
 
-/* ── KEYWORD MAP for Analyze ── */
 const KEYWORDS = {
-  cardiac: ['cardiac','heart','cpr','chest pain','not breathing','unconscious','pulse','heart attack','heartbeat','no breath','breathe','cardio'],
+  cardiac:  ['cardiac','heart','cpr','chest pain','not breathing','unconscious','pulse','heart attack','heartbeat','no breath','breathe','cardio'],
   bleeding: ['bleed','blood','cut','wound','hemorrhage','haemorrhage','gash','slice','severed'],
-  choking: ['chok','choke','airway','heimlich','swallow','stuck throat','can\'t breathe','food stuck','throat'],
-  burns: ['burn','fire','scald','hot','flame','blister','steam','chemical burn'],
-  fracture: ['fractur','broken','broke','bone','sprain','crack','snap','dislocat','joint','ankle','wrist','arm break','leg break']
+  choking:  ['chok','choke','airway','heimlich','swallow','stuck throat','can\'t breathe','food stuck','throat'],
+  burns:    ['burn','fire','scald','hot','flame','blister','steam','chemical burn'],
+  fracture: ['fractur','broken','broke','bone','sprain','crack','snap','dislocat','joint','ankle','wrist']
 };
 
-/* ── LANGUAGE STATE ── */
 let curLang = 'en';
+let leafletMap = null;
+let mapInitialized = false;
 
+/* ── LANGUAGE ── */
 function setLang(lang) {
   curLang = lang;
   document.body.className = 'lang-' + lang;
@@ -567,18 +493,9 @@ function setLang(lang) {
 }
 
 function toggleLang() {
-  const lang = curLang === 'en' ? 'ta' : 'en';
-  curLang = lang;
-  document.body.className = 'lang-' + lang;
-  document.getElementById('langToggle').textContent  = lang === 'en' ? 'தமிழ்' : 'English';
-  document.getElementById('langToggle2').textContent = lang === 'en' ? 'தமிழ்' : 'English';
-  document.getElementById('searchInput').placeholder = lang === 'ta'
-    ? 'அறிகுறிகளை தட்டச்சு செய்யுங்கள்…'
-    : 'Type symptoms — e.g. "chest pain not breathing", "heavy bleeding"…';
-  applyLang(lang);
+  setLang(curLang === 'en' ? 'ta' : 'en');
   if (document.getElementById('pg-detail').classList.contains('active')) {
-    const panel = document.getElementById('instrPanel');
-    const key = panel.dataset.key;
+    const key = document.getElementById('instrPanel').dataset.key;
     if (key) renderInstructions(key, false);
   }
 }
@@ -594,39 +511,124 @@ function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
+
+  // After the home page is visible in the DOM, fix Leaflet if already loaded
+  if (id === 'pg-home' && mapInitialized && leafletMap) {
+    setTimeout(() => leafletMap.invalidateSize(), 150);
+  }
 }
 
-function goHome() {
-  showPage('pg-home');
-}
+function goHome() { showPage('pg-home'); }
 
-/* ── VOICE INPUT ── */
-function startVoice() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    alert(curLang === 'ta' ? 'இந்த உலாவி குரல் உள்ளீட்டை ஆதரிக்கவில்லை' : 'Voice input not supported in this browser.');
+/* ── MAP — only initialised once, triggered by button ── */
+function initMap() {
+  if (!navigator.geolocation) {
+    document.getElementById('map-status').textContent = 'GPS not supported on this device.';
     return;
   }
-  const recognition = new SpeechRecognition();
-  recognition.lang = curLang === 'ta' ? 'ta-IN' : 'en-IN';
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-  recognition.start();
-  recognition.onresult = (event) => {
-    document.getElementById('searchInput').value = event.results[0][0].transcript;
-  };
-  recognition.onerror = () => {
-    alert(curLang === 'ta' ? 'குரல் அங்கீகாரம் தோல்வியடைந்தது' : 'Voice recognition failed. Please type instead.');
-  };
+  document.getElementById('map-status').textContent = curLang === 'ta' ? 'இடம் கண்டறியுகிறது…' : 'Locating you…';
+
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+
+    // Show map div, hide placeholder
+    document.getElementById('map-placeholder').style.display = 'none';
+    const mapEl = document.getElementById('map');
+    mapEl.style.display = 'block';
+    mapEl.style.height = '220px';
+
+    // Destroy old map instance if any (avoids "Map container already initialized" error)
+    if (leafletMap !== null) {
+      leafletMap.remove();
+      leafletMap = null;
+    }
+
+    leafletMap = L.map('map', { zoomControl: true }).setView([lat, lon], 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18
+    }).addTo(leafletMap);
+
+    // User pin
+    const userIcon = L.divIcon({
+      html: '<div style="width:14px;height:14px;background:#C41E1E;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);"></div>',
+      iconSize: [14, 14], iconAnchor: [7, 7], className: ''
+    });
+    L.marker([lat, lon], {icon: userIcon}).addTo(leafletMap).bindPopup('📍 You are here').openPopup();
+
+    mapInitialized = true;
+
+    // CRITICAL: call invalidateSize after the container is fully visible
+    setTimeout(() => {
+      leafletMap.invalidateSize();
+      loadHospitals(lat, lon);
+    }, 300);
+
+  }, err => {
+    document.getElementById('map-status').textContent = curLang === 'ta'
+      ? 'GPS அனுமதி மறுக்கப்பட்டது'
+      : 'GPS permission denied. Enable location and try again.';
+  });
 }
 
-/* ── DETECT EMERGENCY FROM TEXT ── */
+async function loadHospitals(lat, lon) {
+  try {
+    const query = `[out:json];node["amenity"="hospital"](around:2000,${lat},${lon});out;`;
+    const res = await fetch('https://overpass-api.de/api/interpreter', { method:'POST', body: query });
+    const data = await res.json();
+
+    const hospIcon = L.divIcon({
+      html: '<div style="font-size:18px;line-height:1;">🏥</div>',
+      iconSize: [24, 24], iconAnchor: [12, 12], className: ''
+    });
+
+    const hospList = document.getElementById('hosp-list');
+    if (data.elements && data.elements.length > 0) {
+      hospList.innerHTML = '';
+      data.elements.slice(0, 5).forEach(h => {
+        const name = h.tags.name || (curLang === 'ta' ? 'மருத்துவமனை' : 'Hospital');
+        const dist = calcDist(lat, lon, h.lat, h.lon);
+        L.marker([h.lat, h.lon], {icon: hospIcon}).addTo(leafletMap).bindPopup('🏥 ' + name);
+        hospList.innerHTML += `
+          <a href="tel:108" class="hosp-item">
+            <div><div class="hosp-name">${name}</div><div class="hosp-dist">${dist} km away</div></div>
+            <div class="hosp-tag">Open</div>
+          </a>`;
+      });
+      document.getElementById('map-note').style.display = 'block';
+    }
+  } catch(e) {
+    console.warn('Overpass API error:', e);
+  }
+}
+
+function calcDist(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+  return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1);
+}
+
+/* ── VOICE ── */
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert(curLang === 'ta' ? 'இந்த உலாவி குரல் உள்ளீட்டை ஆதரிக்கவில்லை' : 'Voice not supported in this browser.'); return; }
+  const rec = new SR();
+  rec.lang = curLang === 'ta' ? 'ta-IN' : 'en-IN';
+  rec.interimResults = false;
+  rec.start();
+  rec.onresult = e => { document.getElementById('searchInput').value = e.results[0][0].transcript; };
+  rec.onerror = () => { alert(curLang === 'ta' ? 'குரல் அங்கீகாரம் தோல்வியடைந்தது' : 'Voice recognition failed.'); };
+}
+
+/* ── DETECT ── */
 function detectEmergency(text) {
   const t = text.toLowerCase();
   for (const [key, words] of Object.entries(KEYWORDS)) {
-    for (const w of words) {
-      if (t.includes(w)) return key;
-    }
+    for (const w of words) { if (t.includes(w)) return key; }
   }
   return null;
 }
@@ -638,16 +640,6 @@ function renderInstructions(key, fromAnalyze) {
   const panel = document.getElementById('instrPanel');
   panel.dataset.key = key;
 
-  const stepsHTML = d.steps.map((s, i) => `
-    <div class="step">
-      <div class="step-num">${i+1}</div>
-      <div class="step-body">
-        <div class="en">${s.en}</div>
-        <div class="ta">${s.ta}</div>
-      </div>
-    </div>
-  `).join('');
-
   panel.innerHTML = `
     <div class="panel-head">
       <span class="panel-icon">${d.icon}</span>
@@ -657,12 +649,20 @@ function renderInstructions(key, fromAnalyze) {
       </div>
       <span class="panel-badge badge-${d.badge}">${l === 'ta' ? d.badgeText.ta : d.badgeText.en}</span>
     </div>
-    <div class="steps">${stepsHTML}</div>
+    <div class="steps">
+      ${d.steps.map((s,i) => `
+        <div class="step">
+          <div class="step-num">${i+1}</div>
+          <div class="step-body">
+            <div class="en">${s.en}</div>
+            <div class="ta">${s.ta}</div>
+          </div>
+        </div>`).join('')}
+    </div>
     <div class="warn ${d.warn.type}" style="margin-top:.9rem">
       <b>${l === 'ta' ? d.warn.ta : d.warn.en}</b>
       ${l === 'ta' ? d.warn.text_ta : d.warn.text_en}
-    </div>
-  `;
+    </div>`;
 
   const box = document.getElementById('detectedBox');
   if (fromAnalyze) {
@@ -674,46 +674,50 @@ function renderInstructions(key, fromAnalyze) {
   }
 }
 
-/* ── GO TO DETAIL (card click) ── */
-function goDetail(key) {
-  renderInstructions(key, false);
-  showPage('pg-detail');
-}
+function goDetail(key) { renderInstructions(key, false); showPage('pg-detail'); }
 
-/* ── ANALYZE BUTTON ── */
-function doAnalyze() {
+/* ── ANALYZE ── */
+async function doAnalyze() {
   const text = document.getElementById('searchInput').value.trim();
-  if (!text) {
-    alert(curLang === 'ta' ? 'முதலில் அறிகுறிகளை உள்ளிடவும்' : 'Please type your symptoms first.');
-    return;
-  }
-  const key = detectEmergency(text);
-  if (key) {
-    renderInstructions(key, true);
-    showPage('pg-detail');
-  } else {
-    const panel = document.getElementById('instrPanel');
-    panel.dataset.key = '';
-    panel.innerHTML = `
-      <div class="not-found">
-        <div class="nf-icon">🔍</div>
-        <div class="nf-title">${curLang === 'ta' ? 'கண்டுபிடிக்க முடியவில்லை' : 'Could not detect emergency type'}</div>
-        <div class="nf-sub">${curLang === 'ta'
-          ? 'தயவுசெய்து மிகவும் தெளிவாக விவரிக்கவும், அல்லது கீழே உள்ள அவசரநிலை வகையை தேர்ந்தெடுக்கவும்.'
-          : 'Try describing symptoms more clearly, or select an emergency type from the home screen.'
-        }</div>
-      </div>
-    `;
-    document.getElementById('detectedBox').style.display = 'none';
-    showPage('pg-detail');
+  if (!text) { alert(curLang === 'ta' ? 'முதலில் அறிகுறிகளை உள்ளிடவும்' : 'Please type your symptoms first.'); return; }
+
+  try {
+    const res = await fetch('/analyze', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({symptom: text})
+    });
+    const data = await res.json();
+    if (data.type && data.type !== 'unknown') {
+      renderInstructions(data.type, true);
+      showPage('pg-detail');
+      return;
+    }
+    throw new Error('unknown');
+  } catch(e) {
+    // Fallback to local keyword detection
+    const key = detectEmergency(text);
+    if (key) {
+      renderInstructions(key, true);
+      showPage('pg-detail');
+    } else {
+      const panel = document.getElementById('instrPanel');
+      panel.dataset.key = '';
+      panel.innerHTML = `
+        <div class="not-found">
+          <div class="nf-icon">🔍</div>
+          <div class="nf-title">${curLang === 'ta' ? 'கண்டுபிடிக்க முடியவில்லை' : 'Could not detect emergency type'}</div>
+          <div class="nf-sub">${curLang === 'ta'
+            ? 'தயவுசெய்து மிகவும் தெளிவாக விவரிக்கவும்.'
+            : 'Try describing symptoms more clearly, or select an emergency type from the home screen.'}</div>
+        </div>`;
+      document.getElementById('detectedBox').style.display = 'none';
+      showPage('pg-detail');
+    }
   }
 }
 
-/* ── SPLASH TIMER — auto advance after 5s ── */
-setTimeout(() => {
-  showPage('pg-lang');
-}, 5000);
+/* ── SPLASH TIMER ── */
+setTimeout(() => showPage('pg-lang'), 5000);
 </script>
-
 </body>
 </html>
